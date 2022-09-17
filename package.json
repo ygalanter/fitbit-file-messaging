@@ -1,0 +1,22 @@
+{
+  "name": "fitbit-file-messaging",
+  "version": "1.0.0",
+  "description": "Drop-in replacement for Fitbit peer socket messaging",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ygalanter/fitbit-file-messaging.git"
+  },
+  "keywords": [
+    "fitbitdev"
+  ],
+  "author": "Yuriy Galanter",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ygalanter/fitbit-file-messaging/issues"
+  },
+  "homepage": "https://github.com/ygalanter/fitbit-file-messaging#readme"
+}
