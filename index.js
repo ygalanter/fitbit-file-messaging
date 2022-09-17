@@ -60,19 +60,20 @@ if (inbox.pop) { // this is a companion
     })
 
 } else { // this is a device
-    import('fs').then(fs => {
-        inbox.addEventListener("newfile", async () => {
-            let fileName;
-            let payload = {};
+    const { readFileSync } = require("fs");
 
-            while (fileName = inbox.nextFile()) {
-                if (fileName === MESSAGE_FILE_NAME) {
-                    payload.data = fs.readFileSync(fileName, 'cbor');
-                    peerSocket.sendLocal(payload)
-                }
+    inbox.addEventListener("newfile", async () => {
+        let fileName;
+        let payload = {};
+
+        while (fileName = inbox.nextFile()) {
+            if (fileName === MESSAGE_FILE_NAME) {
+                payload.data = readFileSync(fileName, 'cbor');
+                peerSocket.sendLocal(payload)
             }
-        })
+        }
     })
+
 }
 
 
