@@ -27,7 +27,8 @@ export const peerSocket = {
 
         if (this.message) {
             this.message(payload)
-        } else if (this.onmessage) {
+        };
+        if (this.onmessage) {
             this.onmessage(payload)
         }
 
@@ -37,7 +38,8 @@ export const peerSocket = {
     openLocal: function () {
         if (this.open) {
             this.open()
-        } else if (this.onopen) {
+        };
+        if (this.onopen) {
             this.onopen()
         }
     }
