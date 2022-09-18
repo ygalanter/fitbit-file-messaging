@@ -10,8 +10,23 @@ const eventHandlers = {
     error: []
 }
 
+// when incoming data arrives - calls all "onmessage" handlers and passes the data
+function onMessage(payload) {
+    for (let handler of eventHandlers.message) {
+        handler(payload)
+    }
+}
+
+// on app start calls all "onopen" handlers
+function onOpen() {
+    for (let handler of eventHandlers.open) {
+        handler()
+    }
+}
+
 export const peerSocket = {
 
+    // *** Setters for manual event handler assignments
     set onmessage(handler) {
         eventHandlers.message.push(handler);
     },
@@ -27,11 +42,13 @@ export const peerSocket = {
     set onerror(handler) {
         eventHandlers.error.push(handler);
     },
+    // ***
 
 
     readyState: 0,
     OPEN: 0,
 
+    
     addEventListener: function (event, handler) {
         eventHandlers[event].push(handler)
     },
@@ -47,20 +64,6 @@ export const peerSocket = {
             });
     },
 
-    // simulation of `messaging.peerSocket.onMessage` event
-    sendLocal: function (payload) {
-        for (let handler of eventHandlers.message) {
-            handler(payload)
-        }
-    },
-
-    // simulation of `messaging.peerSocket.onMessage` event
-    openLocal: function () {
-        for (let handler of eventHandlers.open) {
-            handler()
-        }
-    }
-
 }
 
 
@@ -73,7 +76,7 @@ if (inbox.pop) { // this is a companion
         while ((file = await inbox.pop())) {
             if (file.name === MESSAGE_FILE_NAME) {
                 payload.data = await file.cbor();
-                peerSocket.sendLocal(payload)
+                onMessage(payload)
             }
         }
     })
@@ -88,13 +91,11 @@ if (inbox.pop) { // this is a companion
         while (fileName = inbox.nextFile()) {
             if (fileName === MESSAGE_FILE_NAME) {
                 payload.data = readFileSync(fileName, 'cbor');
-                peerSocket.sendLocal(payload)
+                onMessage(payload)
             }
         }
     })
 
 }
 
-
-
-setTimeout(() => { peerSocket.openLocal(); }, 1)
+setTimeout(() => { onOpen(); }, 1)
