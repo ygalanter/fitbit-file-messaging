@@ -6,8 +6,13 @@ Drop-in replacement for Fitbit peer socket messaging - just replace the imports 
 
 ```js
 messaging.peerSocket.onmessage = evt => {
-// this code doesn't change
+    // this code doesn't change
 }
+```
+```js
+messaging.peerSocket.addEventListener('open', evt => {
+    // this code doesn't change
+})
 ```
 
 This messaging uses file transfer under the hood, so it's more reliable than regular messaging.
