@@ -42,11 +42,9 @@ export const peerSocket = {
         outbox.enqueue(MESSAGE_FILE_NAME, encode(data))
             .catch(err => {
                 for (let handler of eventHandlers.error) {
-                    handler(payload)
+                    handler(`Error queueing transfer: ${err}`)
                 }
-                console.error(`Error queueing "${MESSAGE_FILE_NAME}": ${err}`);
             });
-
     },
 
     // simulation of `messaging.peerSocket.onMessage` event
