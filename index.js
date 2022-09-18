@@ -3,13 +3,26 @@ import { encode } from 'cbor';
 
 const MESSAGE_FILE_NAME = 'messaging4d9b79c40abe.cbor';
 
+const eventHandlers = {
+    message: [],
+    open: []
+}
+
 export const peerSocket = {
+
+    set onmessage(handler) {
+        eventHandlers.message.push(handler);
+    },
+
+    set onopen(handler) {
+        eventHandlers.open.push(handler);
+    },
 
     readyState: 0,
     OPEN: 0,
 
-    addEventListener: function (event, eventHandler) {
-        this[event] = eventHandler;
+    addEventListener: function (event, handler) {
+        eventHandlers[event].push(handler)
     },
 
     // simulation of `messaging.peerSocket.send` - sends data externally
@@ -24,23 +37,15 @@ export const peerSocket = {
 
     // simulation of `messaging.peerSocket.onMessage` event
     sendLocal: function (payload) {
-
-        if (this.message) {
-            this.message(payload)
-        };
-        if (this.onmessage) {
-            this.onmessage(payload)
+        for (let handler of eventHandlers.message) {
+            handler(payload)
         }
-
     },
 
     // simulation of `messaging.peerSocket.onMessage` event
     openLocal: function () {
-        if (this.open) {
-            this.open()
-        };
-        if (this.onopen) {
-            this.onopen()
+        for (let handler of eventHandlers.open) {
+            handler()
         }
     }
 
