@@ -5,7 +5,9 @@ const MESSAGE_FILE_NAME = 'messaging4d9b79c40abe.cbor';
 
 const eventHandlers = {
     message: [],
-    open: []
+    open: [],
+    closed: [],
+    error: []
 }
 
 export const peerSocket = {
@@ -17,6 +19,15 @@ export const peerSocket = {
     set onopen(handler) {
         eventHandlers.open.push(handler);
     },
+
+    set onclosed(handler) {
+        eventHandlers.closed.push(handler);
+    },
+
+    set onerror(handler) {
+        eventHandlers.error.push(handler);
+    },
+
 
     readyState: 0,
     OPEN: 0,
@@ -30,7 +41,10 @@ export const peerSocket = {
     send: function (data) {
         outbox.enqueue(MESSAGE_FILE_NAME, encode(data))
             .catch(err => {
-                console.error(`#@#@#@#@# Failed to queue '${MESSAGE_FILE_NAME}'. Error: ${err}`);
+                for (let handler of eventHandlers.error) {
+                    handler(payload)
+                }
+                console.error(`Error queueing "${MESSAGE_FILE_NAME}": ${err}`);
             });
 
     },
