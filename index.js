@@ -48,7 +48,6 @@ export const peerSocket = {
     readyState: 0,
     OPEN: 0,
 
-    
     addEventListener: function (event, handler) {
         eventHandlers[event].push(handler)
     },
@@ -69,7 +68,7 @@ export const peerSocket = {
 
 if (inbox.pop) { // this is a companion
 
-    inbox.addEventListener("newfile", async () => {
+    async function processCompanionFiles() {
         let file;
         let payload = {}
 
@@ -79,12 +78,16 @@ if (inbox.pop) { // this is a companion
                 onMessage(payload)
             }
         }
-    })
+    }
+
+    inbox.addEventListener("newfile", processCompanionFiles);
+
+    processCompanionFiles();
 
 } else { // this is a device
     const { readFileSync } = require("fs");
 
-    inbox.addEventListener("newfile", async () => {
+    async function processDeviceFiles() {
         let fileName;
         let payload = {};
 
@@ -94,7 +97,11 @@ if (inbox.pop) { // this is a companion
                 onMessage(payload)
             }
         }
-    })
+    }
+
+    inbox.addEventListener("newfile", processDeviceFiles)
+
+    processDeviceFiles();
 
 }
 
