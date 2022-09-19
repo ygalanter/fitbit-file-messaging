@@ -6,7 +6,7 @@ const MESSAGE_FILE_NAME = 'messaging4d9b79c40abe.cbor';
 const eventHandlers = {
     message: [],
     open: [],
-    closed: [],
+    close: [],
     error: []
 }
 
@@ -35,8 +35,8 @@ export const peerSocket = {
         eventHandlers.open.push(handler);
     },
 
-    set onclosed(handler) {
-        eventHandlers.closed.push(handler);
+    set onclose(handler) {
+        eventHandlers.close.push(handler);
     },
 
     set onerror(handler) {
