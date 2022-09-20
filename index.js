@@ -1,8 +1,29 @@
-import { inbox, outbox } from 'file-transfer';
+import { inbox as fileInbox, outbox as fileOutbox } from 'file-transfer';
 import { encode } from 'cbor';
+
+
+// Additional inbox handlers for users who use file-transfer in their own apps
+const userFileHandlers = {
+    device: [],
+    companion: []
+}
+
+
+export const inbox = {
+    // adds additional file inbox handlers - props: { fileName, callback }
+    // when inbox encounters "fileName" it will call "callback"
+    addFileListener: function (fileName, callback) {
+        if (fileInbox.pop) { // this is a companion
+            userFileHandlers.companion.push({ fileName, callback })
+        } else { // this is a device
+            userFileHandlers.device.push({ fileName, callback })
+        }
+    }
+}
 
 const MESSAGE_FILE_NAME = 'messaging4d9b79c40abe.cbor';
 
+// event handler for messages
 const eventHandlers = {
     message: [],
     open: [],
@@ -55,7 +76,7 @@ export const peerSocket = {
     // simulation of `messaging.peerSocket.send` - sends data externally
     // from device to phone or from phone to device via file transfer
     send: function (data) {
-        outbox.enqueue(MESSAGE_FILE_NAME, encode(data))
+        fileOutbox.enqueue(MESSAGE_FILE_NAME, encode(data))
             .catch(err => {
                 for (let handler of eventHandlers.error) {
                     handler(`Error queueing transfer: ${err}`)
@@ -66,21 +87,28 @@ export const peerSocket = {
 }
 
 
-if (inbox.pop) { // this is a companion
+if (fileInbox.pop) { // this is a companion
 
     async function processCompanionFiles() {
         let file;
         let payload = {}
 
-        while ((file = await inbox.pop())) {
+        while ((file = await fileInbox.pop())) {
             if (file.name === MESSAGE_FILE_NAME) {
                 payload.data = await file.cbor();
                 onMessage(payload)
             }
+
+            // processing user handlers
+            for (let prop of userFileHandlers.companion) {
+                if (file.name === prop.fileName) {
+                    prop.callback(file)
+                }
+            }
         }
     }
 
-    inbox.addEventListener("newfile", processCompanionFiles);
+    fileInbox.addEventListener("newfile", processCompanionFiles);
 
     processCompanionFiles();
 
@@ -91,15 +119,22 @@ if (inbox.pop) { // this is a companion
         let fileName;
         let payload = {};
 
-        while (fileName = inbox.nextFile()) {
+        while (fileName = fileInbox.nextFile()) {
             if (fileName === MESSAGE_FILE_NAME) {
                 payload.data = readFileSync(fileName, 'cbor');
                 onMessage(payload)
             }
+
+            // processing user handlers
+            for (let prop of userFileHandlers.device) {
+                if (fileName === prop.fileName) {
+                    prop.callback(fileName)
+                }
+            }
         }
     }
 
-    inbox.addEventListener("newfile", processDeviceFiles)
+    fileInbox.addEventListener("newfile", processDeviceFiles)
 
     processDeviceFiles();
 
