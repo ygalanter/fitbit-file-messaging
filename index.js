@@ -1,25 +1,5 @@
-import { inbox as fileInbox, outbox as fileOutbox } from 'file-transfer';
+import { inbox, outbox } from 'file-transfer';
 import { encode } from 'cbor';
-
-
-// Additional inbox handlers for users who use file-transfer in their own apps
-const userFileHandlers = {
-    device: [],
-    companion: []
-}
-
-
-export const inbox = {
-    // adds additional file inbox handlers - props: { fileName, callback }
-    // when inbox encounters "fileName" it will call "callback"
-    addFileListener: function (fileName, callback) {
-        if (fileInbox.pop) { // this is a companion
-            userFileHandlers.companion.push({ fileName, callback })
-        } else { // this is a device
-            userFileHandlers.device.push({ fileName, callback })
-        }
-    }
-}
 
 const MESSAGE_FILE_NAME = 'messaging4d9b79c40abe.cbor';
 
@@ -76,7 +56,7 @@ export const peerSocket = {
     // simulation of `messaging.peerSocket.send` - sends data externally
     // from device to phone or from phone to device via file transfer
     send: function (data) {
-        fileOutbox.enqueue(MESSAGE_FILE_NAME, encode(data))
+        outbox.enqueue(MESSAGE_FILE_NAME, encode(data))
             .catch(err => {
                 for (let handler of eventHandlers.error) {
                     handler(`Error queueing transfer: ${err}`)
@@ -86,57 +66,112 @@ export const peerSocket = {
 
 }
 
+const otherFiles = [];
+const myFiles = [];
 
-if (fileInbox.pop) { // this is a companion
+if (inbox.pop) { // this is a companion
+    const prevPop = inbox.pop;
 
-    async function processCompanionFiles() {
-        let file;
-        let payload = {}
-
-        while ((file = await fileInbox.pop())) {
-            if (file.name === MESSAGE_FILE_NAME) {
-                payload.data = await file.cbor();
-                onMessage(payload)
-            }
-
-            // processing user handlers
-            for (let prop of userFileHandlers.companion) {
-                if (file.name === prop.fileName) {
-                    prop.callback(file)
-                }
-            }
-        }
+    const init = () => {
+        inbox.addEventListener("newfile", processCompanionFiles);
     }
 
-    fileInbox.addEventListener("newfile", processCompanionFiles);
+    const processCompanionFiles = async (evt) => {
 
-    processCompanionFiles();
+        let file = getNextMyFile();
+        if (file === undefined) return;
+
+        const payload = {};
+        payload.data = await file.cbor();
+
+        onMessage(payload)
+    }
+
+    inbox.pop = () => {
+        if (otherFiles.length > 0) {
+            return otherFiles.pop();
+        }
+        let file;
+        while (file = prevPop()) {
+            if (file.name === MESSAGE_FILE_NAME) {
+                myFiles.push(file)
+            }
+            else {
+                return file;
+            }
+        }
+        return undefined;
+    }
+
+    const getNextMyFile = () => {
+        if (myFiles.length > 0) {
+            return myFiles.pop()
+        }
+        let file;
+        while (file = prevPop()) {
+            if (file.name === MESSAGE_FILE_NAME) {
+                return file;
+            }
+            otherFiles.push(file);
+        }
+        return undefined;
+    }
+
+    init();
+
+
+
 
 } else { // this is a device
     const { readFileSync } = require("fs");
+    const prevNextFile = inbox.nextFile;
 
-    async function processDeviceFiles() {
-        let fileName;
-        let payload = {};
-
-        while (fileName = fileInbox.nextFile()) {
-            if (fileName === MESSAGE_FILE_NAME) {
-                payload.data = readFileSync(fileName, 'cbor');
-                onMessage(payload)
-            }
-
-            // processing user handlers
-            for (let prop of userFileHandlers.device) {
-                if (fileName === prop.fileName) {
-                    prop.callback(fileName)
-                }
-            }
-        }
+    const init = () => {
+        inbox.addEventListener("newfile", processDeviceFiles)
     }
 
-    fileInbox.addEventListener("newfile", processDeviceFiles)
+    const processDeviceFiles = (evt) => {
 
-    processDeviceFiles();
+        let fileName = getNextMyFile();
+        if (fileName === undefined) return;
+
+        const payload = {};
+        payload.data = readFileSync(fileName, "cbor");
+
+        onMessage(payload)
+    }
+
+    inbox.nextFile = () => {
+        if (otherFiles.length > 0) {
+            return otherFiles.pop();
+        }
+        let fileName;
+        while (fileName = prevNextFile()) {
+            if (fileName === MESSAGE_FILE_NAME) {
+                myFiles.push(fileName)
+            }
+            else {
+                return fileName;
+            }
+        }
+        return undefined;
+    }
+
+    const getNextMyFile = () => {
+        if (myFiles.length > 0) {
+            return myFiles.pop()
+        }
+        let fileName;
+        while (fileName = prevNextFile()) {
+            if (fileName === MESSAGE_FILE_NAME) {
+                return fileName;
+            }
+            otherFiles.push(fileName);
+        }
+        return undefined;
+    }
+
+    init()
 
 }
 

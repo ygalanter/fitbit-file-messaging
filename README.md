@@ -14,20 +14,8 @@ messaging.peerSocket.addEventListener('open', evt => {
     // this code doesn't change
 })
 ```
+```
+messaging.peerSocket.send(data)
+```
 
 This messaging uses file transfer under the hood, so it's more reliable than regular messaging.
-
-**Note**: If you use file transfer in your own application, you need to use `inbox` from this library as well to listen for specific file you need e.g.
-
-```js
-// app
-messaging.inbox.addFileListener('myfile.cbor', fileName => {
-    const data = readFileSync(fileName, 'cbor');
-})
-```
-```js
-// companion
-messaging.inbox.addFileListener('myfile.cbor', file => {
-    file.cbor().then( ... )
-})
-```
