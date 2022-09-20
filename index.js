@@ -78,7 +78,7 @@ if (inbox.pop) { // this is a companion
 
     const processCompanionFiles = async (evt) => {
 
-        let file = getNextMyFile();
+        let file = await getNextMyFile();
         if (file === undefined) return;
 
         const payload = {};
@@ -87,12 +87,12 @@ if (inbox.pop) { // this is a companion
         onMessage(payload)
     }
 
-    inbox.pop = () => {
+    inbox.pop = async () => {
         if (otherFiles.length > 0) {
             return otherFiles.pop();
         }
         let file;
-        while (file = prevPop()) {
+        while (file = await prevPop()) {
             if (file.name === MESSAGE_FILE_NAME) {
                 myFiles.push(file)
             }
@@ -103,12 +103,12 @@ if (inbox.pop) { // this is a companion
         return undefined;
     }
 
-    const getNextMyFile = () => {
+    const getNextMyFile = async () => {
         if (myFiles.length > 0) {
             return myFiles.pop()
         }
         let file;
-        while (file = prevPop()) {
+        while (file = await prevPop()) {
             if (file.name === MESSAGE_FILE_NAME) {
                 return file;
             }
