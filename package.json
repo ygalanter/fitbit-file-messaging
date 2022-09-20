@@ -1,6 +1,6 @@
 {
   "name": "fitbit-file-messaging",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Drop-in replacement for Fitbit peer socket messaging",
   "main": "index.js",
   "scripts": {
