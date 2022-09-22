@@ -3,6 +3,9 @@ import { encode } from 'cbor';
 
 const MESSAGE_FILE_NAME = 'messaging4d9b79c40abe.cbor';
 
+let fileUid = -1;
+const MAX_FILE_UIDS = 9;
+
 // event handler for messages
 const eventHandlers = {
     message: [],
@@ -56,7 +59,8 @@ export const peerSocket = {
     // simulation of `messaging.peerSocket.send` - sends data externally
     // from device to phone or from phone to device via file transfer
     send: function (data) {
-        outbox.enqueue(MESSAGE_FILE_NAME, encode(data))
+        fileUid++; if (fileUid > MAX_FILE_UIDS) fileUid = 0;
+        outbox.enqueue(`${fileUid}${MESSAGE_FILE_NAME}`, encode(data))
             .catch(err => {
                 for (let handler of eventHandlers.error) {
                     handler(`Error queueing transfer: ${err}`)
@@ -94,7 +98,7 @@ if (inbox.pop) { // this is a companion
         }
         let file;
         while (file = await prevPop()) {
-            if (file.name === MESSAGE_FILE_NAME) {
+            if (file.name.substring(1) === MESSAGE_FILE_NAME) {
                 myFiles.push(file)
             }
             else {
@@ -110,7 +114,7 @@ if (inbox.pop) { // this is a companion
         }
         let file;
         while (file = await prevPop()) {
-            if (file.name === MESSAGE_FILE_NAME) {
+            if (file.name.substring(1) === MESSAGE_FILE_NAME) {
                 return file;
             }
             otherFiles.push(file);
@@ -149,7 +153,7 @@ if (inbox.pop) { // this is a companion
         }
         let fileName;
         while (fileName = prevNextFile()) {
-            if (fileName === MESSAGE_FILE_NAME) {
+            if (fileName.substring(1) === MESSAGE_FILE_NAME) {
                 myFiles.push(fileName)
             }
             else {
@@ -165,7 +169,7 @@ if (inbox.pop) { // this is a companion
         }
         let fileName;
         while (fileName = prevNextFile()) {
-            if (fileName === MESSAGE_FILE_NAME) {
+            if (fileName.substring(1) === MESSAGE_FILE_NAME) {
                 return fileName;
             }
             otherFiles.push(fileName);
