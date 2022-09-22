@@ -1,10 +1,21 @@
 {
   "name": "fitbit-file-messaging",
-  "version": "1.3.2",
+  "version": "1.3.4",
   "description": "Drop-in replacement for Fitbit peer socket messaging",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "babel source --out-dir .",
+    "prepublish": "npm run build"
+  },
+  "babel": {
+    "presets": [
+      [
+        "es2015",
+        {
+          "modules": false
+        }
+      ]
+    ]
   },
   "repository": {
     "type": "git",
@@ -18,5 +29,9 @@
   "bugs": {
     "url": "https://github.com/ygalanter/fitbit-file-messaging/issues"
   },
-  "homepage": "https://github.com/ygalanter/fitbit-file-messaging#readme"
+  "homepage": "https://github.com/ygalanter/fitbit-file-messaging#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1"
+  }
 }
