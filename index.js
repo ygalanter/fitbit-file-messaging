@@ -74,6 +74,7 @@ if (inbox.pop) { // this is a companion
 
     const init = () => {
         inbox.addEventListener("newfile", processCompanionFiles);
+        processCompanionFiles();
     }
 
     const processCompanionFiles = async (evt) => {
@@ -127,7 +128,8 @@ if (inbox.pop) { // this is a companion
     const prevNextFile = inbox.nextFile;
 
     const init = () => {
-        inbox.addEventListener("newfile", processDeviceFiles)
+        inbox.addEventListener("newfile", processDeviceFiles);
+        processDeviceFiles();
     }
 
     const processDeviceFiles = (evt) => {
