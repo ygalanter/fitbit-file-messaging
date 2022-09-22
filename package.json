@@ -10,7 +10,7 @@
   "babel": {
     "presets": [
       [
-        "env",
+        "@babel/preset-env",
         {
           "modules": false
         }
@@ -31,7 +31,8 @@
   },
   "homepage": "https://github.com/ygalanter/fitbit-file-messaging#readme",
   "devDependencies": {
-    "babel-cli": "^7.18.10",
-    "babel-preset-env": "^1.7.0"
+    "@babel/cli": "^7.18.10",
+    "@babel/core": "^7.19.1",
+    "@babel/preset-env": "^7.19.1"
   }
 }
