@@ -74,7 +74,7 @@ const otherFiles = [];
 const myFiles = [];
 
 if (inbox.pop) { // this is a companion
-    const prevPop = inbox.pop;
+    inbox.prevPop = inbox.pop;
 
     const init = () => {
         inbox.addEventListener("newfile", processCompanionFiles);
@@ -97,7 +97,7 @@ if (inbox.pop) { // this is a companion
             return otherFiles.pop();
         }
         let file;
-        while (file = await prevPop()) {
+        while (file = await inbox.prevPop()) {
             if (file.name.substring(1) === MESSAGE_FILE_NAME) {
                 myFiles.push(file)
             }
@@ -113,7 +113,7 @@ if (inbox.pop) { // this is a companion
             return myFiles.pop()
         }
         let file;
-        while (file = await prevPop()) {
+        while (file = await inbox.prevPop()) {
             if (file.name.substring(1) === MESSAGE_FILE_NAME) {
                 return file;
             }
@@ -129,7 +129,7 @@ if (inbox.pop) { // this is a companion
 
 } else { // this is a device
     const { readFileSync } = require("fs");
-    const prevNextFile = inbox.nextFile;
+    inbox.prevNextFile = inbox.nextFile;
 
     const init = () => {
         inbox.addEventListener("newfile", processDeviceFiles);
@@ -152,7 +152,7 @@ if (inbox.pop) { // this is a companion
             return otherFiles.pop();
         }
         let fileName;
-        while (fileName = prevNextFile()) {
+        while (fileName = inbox.prevNextFile()) {
             if (fileName.substring(1) === MESSAGE_FILE_NAME) {
                 myFiles.push(fileName)
             }
@@ -168,7 +168,7 @@ if (inbox.pop) { // this is a companion
             return myFiles.pop()
         }
         let fileName;
-        while (fileName = prevNextFile()) {
+        while (fileName = inbox.prevNextFile()) {
             if (fileName.substring(1) === MESSAGE_FILE_NAME) {
                 return fileName;
             }
